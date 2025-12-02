@@ -1,0 +1,1814 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⚡ SommenFlitser - Digiboard App</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cdefs%3E%3ClinearGradient id='grad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%23667eea;stop-opacity:1' /%3E%3Cstop offset='100%25' style='stop-color:%23764ba2;stop-opacity:1' /%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100' height='100' rx='20' fill='url(%23grad)'/%3E%3Cpath d='M 55 15 L 35 50 L 45 50 L 30 85 L 65 45 L 52 45 L 70 15 Z' fill='%23fff' stroke='%23ffd700' stroke-width='2'/%3E%3C/svg%3E">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #667eea;
+            --primary-dark: #764ba2;
+            --success: #11998e;
+            --success-light: #38ef7d;
+            --danger: #eb3349;
+            --danger-light: #f45c43;
+            --dark: #2c3e50;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* START SCREEN */
+        .start-screen {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+
+        .start-screen.hidden {
+            display: none;
+        }
+
+        .start-container {
+            background: white;
+            border-radius: 30px;
+            padding: 60px;
+            max-width: 900px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .app-title {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 700;
+        }
+
+        .app-subtitle {
+            font-size: 1.3rem;
+            color: #666;
+            margin-bottom: 50px;
+        }
+
+        .mode-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        .mode-button {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 3px solid transparent;
+            border-radius: 20px;
+            padding: 40px 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .mode-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            border-color: var(--primary);
+        }
+
+        .mode-icon {
+            font-size: 4rem;
+            margin-bottom: 15px;
+        }
+
+        .mode-name {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .mode-description {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.5;
+        }
+
+        /* SETTINGS SCREEN */
+        .settings-screen {
+            display: none;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .settings-screen.active {
+            display: block;
+        }
+
+        .settings-container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .settings-title {
+            font-size: 2rem;
+            color: var(--dark);
+        }
+
+        .back-button {
+            background: #e0e0e0;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .back-button:hover {
+            background: #d0d0d0;
+            transform: translateX(-3px);
+        }
+
+        /* SIMPLE SETTINGS */
+        .simple-settings {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .setting-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+        }
+
+        .setting-section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: var(--primary);
+        }
+
+        .option-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+        }
+
+        .option-button {
+            background: #f5f7fa;
+            border: 3px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .option-button:hover {
+            background: #e8ecf0;
+            transform: translateY(-2px);
+        }
+
+        .option-button.active {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-color: var(--primary);
+            color: white;
+        }
+
+        /* ADVANCED SETTINGS */
+        .advanced-settings {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 25px;
+        }
+
+        .setting-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .setting-label {
+            font-weight: 600;
+            color: var(--dark);
+            font-size: 1.1rem;
+        }
+
+        .setting-input {
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            background: white;
+        }
+
+        .range-container {
+            position: relative;
+        }
+
+        .range-input {
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: #e0e0e0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+        }
+
+        .range-input::-moz-range-thumb {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            border: none;
+        }
+
+        .range-value {
+            position: absolute;
+            right: 0;
+            top: -30px;
+            background: var(--primary);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .start-session-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 20px;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+        }
+
+        .start-session-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        /* GAME SCREEN */
+        .game-screen {
+            display: none;
+            height: 100vh;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .game-screen.active {
+            display: flex;
+        }
+
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            color: white;
+        }
+
+        .game-logo {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .game-stats {
+            display: flex;
+            gap: 20px;
+            background: rgba(255,255,255,0.2);
+            padding: 15px 25px;
+            border-radius: 15px;
+        }
+
+        .game-stats.hidden {
+            display: none;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .progress-container {
+            margin-bottom: 20px;
+        }
+
+        .progress-label {
+            color: white;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            background: rgba(255,255,255,0.3);
+            height: 30px;
+            border-radius: 15px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+            height: 100%;
+            border-radius: 15px;
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .opgave-display {
+            flex: 1;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 400px;
+            padding: 40px;
+        }
+
+        .timer-display {
+            position: absolute;
+            top: 30px;
+            right: 40px;
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--primary);
+            animation: pulse 1s infinite;
+        }
+
+        .timer-display.danger {
+            color: var(--danger);
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        #opgaveContent {
+            width: 100%;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .opgave-text {
+            font-size: 10rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        .input-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 500px;
+        }
+
+        .answer-input {
+            font-size: 4rem;
+            padding: 20px;
+            border: 4px solid var(--primary);
+            border-radius: 15px;
+            text-align: center;
+            width: 100%;
+            font-weight: 700;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: var(--primary-dark);
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2);
+        }
+
+        .check-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            padding: 20px 60px;
+            border-radius: 12px;
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .check-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .keuze-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .keuze-button {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            border: 4px solid var(--primary);
+            padding: 30px;
+            border-radius: 15px;
+            font-size: 5rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--dark);
+        }
+
+        .keuze-button:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .keuze-button.correct {
+            background: linear-gradient(135deg, var(--success) 0%, var(--success-light) 100%);
+            color: white;
+            border-color: var(--success);
+        }
+
+        .keuze-button.incorrect {
+            background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
+            color: white;
+            border-color: var(--danger);
+        }
+
+        .klassikaal-controls {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .control-btn {
+            flex: 1;
+            background: white;
+            border: 4px solid var(--primary);
+            padding: 25px;
+            border-radius: 12px;
+            font-size: 2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--primary);
+        }
+
+        .control-btn:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .control-btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+        }
+
+        .control-btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .abort-btn {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: var(--danger);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .abort-btn:hover {
+            background: var(--danger-light);
+            transform: scale(1.05);
+        }
+
+        .loading-screen {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255,255,255,0.95);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 10;
+        }
+
+        .loading-screen.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 80px;
+            height: 80px;
+            border: 8px solid #e0e0e0;
+            border-top: 8px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .feedback-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            align-items: center;
+            justify-content: center;
+            border-radius: 20px;
+            z-index: 20;
+            animation: bounceIn 0.5s;
+        }
+
+        .feedback-overlay.active {
+            display: flex;
+        }
+
+        .feedback-overlay.correct {
+            background: linear-gradient(135deg, rgba(17, 153, 142, 0.95) 0%, rgba(56, 239, 125, 0.95) 100%);
+        }
+
+        .feedback-overlay.incorrect {
+            background: linear-gradient(135deg, rgba(235, 51, 73, 0.95) 0%, rgba(244, 92, 67, 0.95) 100%);
+        }
+
+        @keyframes bounceIn {
+            0% { transform: scale(0.3); opacity: 0; }
+            50% { transform: scale(1.05); }
+            70% { transform: scale(0.9); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .feedback-message {
+            font-size: 8rem;
+            font-weight: 700;
+            color: white;
+            text-align: center;
+        }
+
+        /* RESULTS SCREEN */
+        .results-screen {
+            display: none;
+            height: 100vh;
+            overflow-y: auto;
+            padding: 40px 20px;
+        }
+
+        .results-screen.active {
+            display: block;
+        }
+
+        .results-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .results-title {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: var(--primary);
+        }
+
+        .results-score {
+            font-size: 4rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 10px;
+        }
+
+        .results-subtitle {
+            font-size: 2rem;
+            color: #666;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+        }
+
+        .results-table th {
+            background: var(--primary);
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-size: 1.1rem;
+        }
+
+        .results-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 1rem;
+        }
+
+        .results-table tr:hover {
+            background: #f5f7fa;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .status-badge.correct {
+            background: var(--success);
+            color: white;
+        }
+
+        .status-badge.incorrect {
+            background: var(--danger);
+            color: white;
+        }
+
+        .results-actions {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .results-actions button {
+            flex: 1;
+            max-width: 250px;
+        }
+
+        @media (max-width: 768px) {
+            .mode-selection {
+                grid-template-columns: 1fr;
+            }
+
+            .advanced-settings {
+                grid-template-columns: 1fr;
+            }
+
+            .keuze-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .results-actions {
+                flex-direction: column;
+            }
+
+            .results-actions button {
+                max-width: none;
+            }
+
+            .opgave-text {
+                font-size: 5rem;
+            }
+
+            .answer-input {
+                font-size: 3rem;
+            }
+
+            .keuze-button {
+                font-size: 3rem;
+            }
+
+            .feedback-message {
+                font-size: 5rem;
+            }
+        }
+
+        /* CUSTOM MODAL */
+        .custom-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s;
+        }
+
+        .custom-modal.active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.3s;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 4rem;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            font-weight: 700;
+            text-align: center;
+            color: var(--dark);
+            margin-bottom: 15px;
+        }
+
+        .modal-message {
+            font-size: 1.2rem;
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 120px;
+        }
+
+        .modal-btn-cancel {
+            background: #e0e0e0;
+            color: var(--dark);
+        }
+
+        .modal-btn-cancel:hover {
+            background: #d0d0d0;
+            transform: translateY(-2px);
+        }
+
+        .modal-btn-confirm {
+            background: linear-gradient(135deg, var(--danger) 0%, var(--danger-light) 100%);
+            color: white;
+        }
+
+        .modal-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(235, 51, 73, 0.4);
+        }
+
+        .modal-btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+        }
+
+        .modal-btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <!-- START SCREEN -->
+    <div class="start-screen" id="startScreen">
+        <div class="start-container">
+            <div class="app-title">⚡ SommenFlitser</div>
+            <div class="app-subtitle">Kies je modus om te beginnen</div>
+            
+            <div class="mode-selection">
+                <div class="mode-button" onclick="selectMode('klassikaal')">
+                    <div class="mode-icon">👨‍🏫</div>
+                    <div class="mode-name">Klassikaal</div>
+                    <div class="mode-description">
+                        Voor gebruik op het digiboard. Leerlingen houden eigen score bij.
+                    </div>
+                </div>
+
+                <div class="mode-button" onclick="selectMode('individueel')">
+                    <div class="mode-icon">🎓</div>
+                    <div class="mode-name">Individueel</div>
+                    <div class="mode-description">
+                        Voor leerlingen om zelfstandig te oefenen met directe feedback.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SETTINGS SCREEN -->
+    <div class="settings-screen" id="settingsScreen">
+        <div class="settings-container">
+            <div class="settings-header">
+                <h2 class="settings-title" id="settingsTitle">⚙️ Instellingen</h2>
+                <button class="back-button" onclick="backToStart()">← Terug</button>
+            </div>
+
+            <!-- SIMPLE SETTINGS (INDIVIDUEEL) -->
+            <div class="simple-settings" id="simpleSettings" style="display: none;">
+                <div class="setting-section">
+                    <div class="setting-section-title">Bewerking</div>
+                    <div class="option-buttons">
+                        <button class="option-button active" data-bewerking="optellen">➕ Optellen</button>
+                        <button class="option-button" data-bewerking="aftrekken">➖ Aftrekken</button>
+                        <button class="option-button" data-bewerking="vermenigvuldigen">✖️ Keer</button>
+                        <button class="option-button" data-bewerking="delen">➗ Delen</button>
+                        <button class="option-button" data-bewerking="gemengd">🔀 Gemengd</button>
+                    </div>
+                </div>
+
+                <div class="setting-section">
+                    <div class="setting-section-title">Niveau</div>
+                    <div class="option-buttons">
+                        <button class="option-button active" data-niveau="1">⭐ Makkelijk</button>
+                        <button class="option-button" data-niveau="2">⭐⭐ Gemiddeld</button>
+                        <button class="option-button" data-niveau="3">⭐⭐⭐ Moeilijk</button>
+                    </div>
+                </div>
+
+                <div class="setting-section">
+                    <div class="setting-section-title">Aantal sommen</div>
+                    <div class="option-buttons">
+                        <button class="option-button active" data-aantal="10">10 sommen</button>
+                        <button class="option-button" data-aantal="15">15 sommen</button>
+                        <button class="option-button" data-aantal="20">20 sommen</button>
+                        <button class="option-button" data-aantal="25">25 sommen</button>
+                    </div>
+                </div>
+
+                <div class="setting-section">
+                    <div class="setting-section-title">Hoe wil je antwoorden?</div>
+                    <div class="option-buttons">
+                        <button class="option-button active" data-weergave="input">⌨️ Typen</button>
+                        <button class="option-button" data-weergave="keuze">🔢 Keuzes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADVANCED SETTINGS (KLASSIKAAL) -->
+            <div class="advanced-settings" id="advancedSettings" style="display: none;">
+                <div class="setting-group">
+                    <label class="setting-label">Bewerking:</label>
+                    <select class="setting-input" id="settingBewerking">
+                        <option value="optellen">➕ Optellen</option>
+                        <option value="aftrekken">➖ Aftrekken</option>
+                        <option value="vermenigvuldigen">✖️ Vermenigvuldigen</option>
+                        <option value="delen">➗ Delen</option>
+                        <option value="gemengd">🔀 Gemengd</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Niveau:</label>
+                    <select class="setting-input" id="settingNiveau">
+                        <option value="1">⭐ Niveau 1 - Basis</option>
+                        <option value="2">⭐⭐ Niveau 2 - Gevorderd</option>
+                        <option value="3">⭐⭐⭐ Niveau 3 - Expert</option>
+                    </select>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Aantal sommen: <span id="aantalValue">10</span></label>
+                    <div class="range-container">
+                        <input type="range" class="range-input" id="settingAantal" 
+                               min="5" max="50" step="5" value="10"
+                               oninput="updateRangeValue('aantal', this.value)">
+                        <div class="range-value" id="aantalDisplay">10</div>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Timer per som: <span id="timerValue">30s</span></label>
+                    <div class="range-container">
+                        <input type="range" class="range-input" id="settingTimer" 
+                               min="5" max="120" step="5" value="30"
+                               oninput="updateRangeValue('timer', this.value)">
+                        <div class="range-value" id="timerDisplay">30s</div>
+                    </div>
+                </div>
+
+                <div class="setting-group">
+                    <label class="setting-label">Antwoord weergave: <span id="antwoordValue">3s</span></label>
+                    <div class="range-container">
+                        <input type="range" class="range-input" id="settingAntwoord" 
+                               min="1" max="10" step="1" value="3"
+                               oninput="updateRangeValue('antwoord', this.value)">
+                        <div class="range-value" id="antwoordDisplay">3s</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="start-session-btn" onclick="startSession()">
+                ⚡ Start SommenFlitser
+            </button>
+        </div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div class="game-screen" id="gameScreen">
+        <div class="game-header">
+            <div class="game-logo">⚡ SommenFlitser</div>
+            <div class="game-stats" id="gameStats">
+                <div class="stat-item">
+                    <div class="stat-label">Correct</div>
+                    <div class="stat-value" id="gameCorrect">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Fout</div>
+                    <div class="stat-value" id="gameIncorrect">0</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Score</div>
+                    <div class="stat-value" id="gameScore">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-label" id="progressLabel">Som 0 van 0</div>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressFill" style="width: 0%">0%</div>
+            </div>
+        </div>
+
+        <div class="opgave-display" id="opgaveDisplay">
+            <div class="timer-display" id="gameTimer">30</div>
+            <div id="opgaveContent"></div>
+            
+            <div class="loading-screen" id="loadingScreen">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">Volgende som...</div>
+            </div>
+
+            <div class="feedback-overlay" id="feedbackOverlay">
+                <div class="feedback-message" id="feedbackMessage"></div>
+            </div>
+        </div>
+
+        <button class="abort-btn" onclick="abortSession()">❌ Stoppen</button>
+    </div>
+
+    <!-- RESULTS SCREEN -->
+    <div class="results-screen" id="resultsScreen">
+        <div class="results-container">
+            <div class="results-header">
+                <div class="results-title" id="resultsTitle">🎉 Klaar!</div>
+                <div class="results-score" id="finalScore"></div>
+                <div class="results-subtitle" id="finalPercentage"></div>
+            </div>
+
+            <table class="results-table" id="resultsTable">
+                <thead id="resultsTableHead">
+                    <tr>
+                        <th>#</th>
+                        <th>Opgave</th>
+                        <th>Jouw antwoord</th>
+                        <th>Correct</th>
+                        <th>Tijd</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="resultsTableBody">
+                </tbody>
+            </table>
+
+            <div class="results-actions">
+                <button class="control-btn control-btn-primary" onclick="restartSession()">
+                    🔄 Opnieuw
+                </button>
+                <button class="control-btn control-btn-primary" id="retryBtn" onclick="retryIncorrect()">
+                    ❌ Foute herhalen
+                </button>
+                <button class="control-btn control-btn-primary" onclick="backToStartFull()">
+                    🏠 Terug
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- CUSTOM MODAL -->
+    <div class="custom-modal" id="customModal">
+        <div class="modal-content">
+            <div class="modal-icon" id="modalIcon">❓</div>
+            <div class="modal-title" id="modalTitle">Bevestiging</div>
+            <div class="modal-message" id="modalMessage">Weet je het zeker?</div>
+            <div class="modal-buttons" id="modalButtons">
+                <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Annuleren</button>
+                <button class="modal-btn modal-btn-confirm" onclick="confirmModal()">Ja</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===================================
+        // OPGAVE GENERATOR
+        // ===================================
+        class OpgaveGenerator {
+            constructor() {
+                this.niveaus = {
+                    1: {
+                        optellen: { max: 100, range: 50 },
+                        aftrekken: { max: 100, range: 50 },
+                        vermenigvuldigen: { max: 100, range: 10, tafelMax: 10 },
+                        delen: { max: 100, range: 10, tafelMax: 10 }
+                    },
+                    2: {
+                        optellen: { max: 500, range: 200 },
+                        aftrekken: { max: 500, range: 200 },
+                        vermenigvuldigen: { max: 144, range: 12, tafelMax: 12 },
+                        delen: { max: 144, range: 12, tafelMax: 12 }
+                    },
+                    3: {
+                        optellen: { max: 1000, range: 500 },
+                        aftrekken: { max: 1000, range: 1000 },
+                        vermenigvuldigen: { max: 144, range: 12, tafelMax: 12 },
+                        delen: { max: 144, range: 12, tafelMax: 12 }
+                    }
+                };
+            }
+
+            genereer(bewerking, niveau) {
+                const config = this.niveaus[niveau][bewerking];
+                
+                switch(bewerking) {
+                    case 'optellen':
+                        return this.genereerOptelling(config, bewerking, niveau);
+                    case 'aftrekken':
+                        return this.genereerAftrekking(config, bewerking, niveau);
+                    case 'vermenigvuldigen':
+                        return this.genereerVermenigvuldiging(config, bewerking, niveau);
+                    case 'delen':
+                        return this.genereerDeling(config, bewerking, niveau);
+                }
+            }
+
+            genereerOptelling(config, bewerking, niveau) {
+                const a = Math.floor(Math.random() * config.range) + 1;
+                const maxB = Math.min(config.range, config.max - a);
+                const b = Math.floor(Math.random() * maxB) + 1;
+                
+                return { a, b, operator: '+', antwoord: a + b, bewerking, niveau };
+            }
+
+            genereerAftrekking(config, bewerking, niveau) {
+                const a = Math.floor(Math.random() * config.range) + 1;
+                const b = Math.floor(Math.random() * a) + 1;
+                
+                return { a, b, operator: '−', antwoord: a - b, bewerking, niveau };
+            }
+
+            genereerVermenigvuldiging(config, bewerking, niveau) {
+                const a = Math.floor(Math.random() * config.tafelMax) + 1;
+                const b = Math.floor(Math.random() * config.tafelMax) + 1;
+                
+                return { a, b, operator: '×', antwoord: a * b, bewerking, niveau };
+            }
+
+            genereerDeling(config, bewerking, niveau) {
+                const b = Math.floor(Math.random() * config.tafelMax) + 1;
+                const c = Math.floor(Math.random() * config.tafelMax) + 1;
+                const a = b * c;
+                
+                return { a, b, operator: '÷', antwoord: c, bewerking, niveau };
+            }
+
+            genereerKeuzes(correctAntwoord, bewerking) {
+                const keuzes = new Set([correctAntwoord]);
+                const eindcijfer = correctAntwoord % 10;
+                
+                let pogingen = 0;
+                let aantalZelfdeEindcijfer = 0;
+                
+                while (keuzes.size < 4 && pogingen < 50) {
+                    let fout;
+                    
+                    if (bewerking === 'vermenigvuldigen' || bewerking === 'delen') {
+                        // Voor vermenigvuldigen/delen: normale strategie
+                        const delta = Math.floor(Math.random() * 15) - 7;
+                        fout = correctAntwoord + delta;
+                    } else {
+                        // Voor optellen/aftrekken: voorkom eindcijfer-goktruc
+                        // 60% kans om bewust hetzelfde eindcijfer te gebruiken
+                        if (Math.random() < 0.6 && aantalZelfdeEindcijfer < 2) {
+                            // Genereer getal met ZELFDE eindcijfer (delta moet veelvoud van 10 zijn)
+                            const deltaSteps = Math.floor(Math.random() * 9) - 4; // -4 tot +4 (behalve 0)
+                            const delta = deltaSteps === 0 ? 10 : deltaSteps * 10; // -40, -30, -20, -10, 10, 20, 30, 40
+                            fout = correctAntwoord + delta;
+                            aantalZelfdeEindcijfer++;
+                        } else {
+                            // Normale generatie met verschillende eindcijfers
+                            const delta = Math.floor(Math.random() * 40) - 20;
+                            fout = correctAntwoord + delta;
+                        }
+                    }
+                    
+                    if (fout > 0 && fout !== correctAntwoord) {
+                        keuzes.add(fout);
+                    }
+                    pogingen++;
+                }
+                
+                // Vul aan met random getallen indien nodig
+                while (keuzes.size < 4) {
+                    const random = Math.floor(Math.random() * correctAntwoord * 2) + 1;
+                    if (random !== correctAntwoord) {
+                        keuzes.add(random);
+                    }
+                }
+                
+                const keuzesArray = Array.from(keuzes);
+                return keuzesArray.sort(() => Math.random() - 0.5);
+            }
+        }
+
+        // ===================================
+        // MODAL FUNCTIONS
+        // ===================================
+        let modalCallback = null;
+
+        function showModal(icon, title, message, buttons) {
+            document.getElementById('modalIcon').textContent = icon;
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalMessage').textContent = message;
+            
+            const modalButtons = document.getElementById('modalButtons');
+            modalButtons.innerHTML = '';
+            
+            buttons.forEach(btn => {
+                const button = document.createElement('button');
+                button.className = `modal-btn modal-btn-${btn.type}`;
+                button.textContent = btn.text;
+                button.onclick = btn.action;
+                modalButtons.appendChild(button);
+            });
+            
+            document.getElementById('customModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('customModal').classList.remove('active');
+            modalCallback = null;
+        }
+
+        function confirmModal() {
+            if (modalCallback) {
+                modalCallback();
+            }
+            closeModal();
+        }
+
+        function showConfirm(icon, title, message, onConfirm) {
+            modalCallback = onConfirm;
+            showModal(icon, title, message, [
+                { text: 'Annuleren', type: 'cancel', action: closeModal },
+                { text: 'Ja, stoppen', type: 'confirm', action: confirmModal }
+            ]);
+        }
+
+        function showAlert(icon, title, message) {
+            showModal(icon, title, message, [
+                { text: 'Oké', type: 'primary', action: closeModal }
+            ]);
+        }
+
+        // ===================================
+        // GLOBAL STATE
+        // ===================================
+        const generator = new OpgaveGenerator();
+        let appState = {
+            mode: null,
+            settings: {},
+            session: {
+                opgaven: [],
+                currentIndex: 0,
+                results: [],
+                startTime: null
+            },
+            currentOpgave: null,
+            timerInterval: null,
+            timeLeft: 0,
+            opgaveStartTime: null
+        };
+
+        // ===================================
+        // MODE SELECTION
+        // ===================================
+        function selectMode(mode) {
+            appState.mode = mode;
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('settingsScreen').classList.add('active');
+            
+            if (mode === 'individueel') {
+                document.getElementById('settingsTitle').textContent = '⚙️ Stel je oefening in';
+                document.getElementById('simpleSettings').style.display = 'flex';
+                document.getElementById('advancedSettings').style.display = 'none';
+            } else {
+                document.getElementById('settingsTitle').textContent = '⚙️ Klassikale instellingen';
+                document.getElementById('simpleSettings').style.display = 'none';
+                document.getElementById('advancedSettings').style.display = 'grid';
+            }
+        }
+
+        function updateRangeValue(type, value) {
+            const suffix = type === 'antwoord' || type === 'timer' ? 's' : '';
+            document.getElementById(`${type}Display`).textContent = value + suffix;
+            document.getElementById(`${type}Value`).textContent = value + suffix;
+        }
+
+        function backToStart() {
+            document.getElementById('settingsScreen').classList.remove('active');
+            document.getElementById('startScreen').classList.remove('hidden');
+        }
+
+        // ===================================
+        // SESSION MANAGEMENT
+        // ===================================
+        function startSession() {
+            if (appState.mode === 'individueel') {
+                appState.settings = {
+                    bewerking: document.querySelector('[data-bewerking].active').dataset.bewerking,
+                    niveau: parseInt(document.querySelector('[data-niveau].active').dataset.niveau),
+                    aantal: parseInt(document.querySelector('[data-aantal].active').dataset.aantal),
+                    weergave: document.querySelector('[data-weergave].active').dataset.weergave,
+                    timer: 60,
+                    antwoordTijd: 3
+                };
+            } else {
+                appState.settings = {
+                    bewerking: document.getElementById('settingBewerking').value,
+                    niveau: parseInt(document.getElementById('settingNiveau').value),
+                    aantal: parseInt(document.getElementById('settingAantal').value),
+                    timer: parseInt(document.getElementById('settingTimer').value),
+                    antwoordTijd: parseInt(document.getElementById('settingAntwoord').value),
+                    weergave: 'opgave'
+                };
+            }
+
+            // Generate opgaven (uniek binnen sessie)
+            appState.session.opgaven = [];
+            const opgavenSet = new Set();
+            let pogingen = 0;
+            const maxPogingen = appState.settings.aantal * 20; // Safety limit
+            
+            while (appState.session.opgaven.length < appState.settings.aantal && pogingen < maxPogingen) {
+                let bewerking = appState.settings.bewerking;
+                if (bewerking === 'gemengd') {
+                    const opties = ['optellen', 'aftrekken', 'vermenigvuldigen', 'delen'];
+                    bewerking = opties[Math.floor(Math.random() * opties.length)];
+                }
+                
+                const opgave = generator.genereer(bewerking, appState.settings.niveau);
+                
+                // Maak unieke identifier voor deze som
+                const opgaveKey = `${opgave.a}${opgave.operator}${opgave.b}`;
+                
+                // Voeg alleen toe als deze som nog niet voorkomt
+                if (!opgavenSet.has(opgaveKey)) {
+                    opgavenSet.add(opgaveKey);
+                    appState.session.opgaven.push(opgave);
+                }
+                
+                pogingen++;
+            }
+            
+            // Als we niet genoeg unieke sommen konden maken (zeer zeldzaam),
+            // vul aan met duplicaten
+            while (appState.session.opgaven.length < appState.settings.aantal) {
+                let bewerking = appState.settings.bewerking;
+                if (bewerking === 'gemengd') {
+                    const opties = ['optellen', 'aftrekken', 'vermenigvuldigen', 'delen'];
+                    bewerking = opties[Math.floor(Math.random() * opties.length)];
+                }
+                appState.session.opgaven.push(
+                    generator.genereer(bewerking, appState.settings.niveau)
+                );
+            }
+
+            appState.session.currentIndex = 0;
+            appState.session.results = [];
+            appState.session.startTime = Date.now();
+
+            // Show game screen
+            document.getElementById('settingsScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+
+            // Hide stats for klassikaal mode
+            if (appState.mode === 'klassikaal') {
+                document.getElementById('gameStats').classList.add('hidden');
+            } else {
+                document.getElementById('gameStats').classList.remove('hidden');
+            }
+
+            startOpgave();
+        }
+
+        function startOpgave() {
+            if (appState.session.currentIndex >= appState.session.opgaven.length) {
+                endSession();
+                return;
+            }
+
+            appState.currentOpgave = appState.session.opgaven[appState.session.currentIndex];
+            appState.opgaveStartTime = Date.now();
+            appState.timeLeft = appState.settings.timer;
+
+            updateProgress();
+            renderOpgave();
+            startTimer();
+        }
+
+        function renderOpgave() {
+            const content = document.getElementById('opgaveContent');
+            const opgave = appState.currentOpgave;
+
+            if (appState.mode === 'klassikaal') {
+                content.innerHTML = `
+                    <div class="opgave-text">${opgave.a} ${opgave.operator} ${opgave.b} = ?</div>
+                    <div class="klassikaal-controls">
+                        <button class="control-btn" onclick="showAnswer()">
+                            👁️ Toon antwoord
+                        </button>
+                        <button class="control-btn control-btn-primary" onclick="nextOpgave()">
+                            ➡️ Volgende som
+                        </button>
+                    </div>
+                `;
+            } else if (appState.settings.weergave === 'input') {
+                content.innerHTML = `
+                    <div class="opgave-text">${opgave.a} ${opgave.operator} ${opgave.b} = ?</div>
+                    <div class="input-container">
+                        <input type="number" class="answer-input" id="answerInput" 
+                               placeholder="?" autofocus>
+                        <button class="check-btn" onclick="checkInputAnswer()">
+                            ✓ Controleer
+                        </button>
+                    </div>
+                `;
+
+                // Enter key support
+                setTimeout(() => {
+                    const input = document.getElementById('answerInput');
+                    if (input) {
+                        input.focus();
+                        input.addEventListener('keypress', (e) => {
+                            if (e.key === 'Enter') {
+                                checkInputAnswer();
+                            }
+                        });
+                    }
+                }, 100);
+            } else {
+                const keuzes = generator.genereerKeuzes(opgave.antwoord, opgave.bewerking);
+                content.innerHTML = `
+                    <div class="opgave-text">${opgave.a} ${opgave.operator} ${opgave.b} = ?</div>
+                    <div class="keuze-buttons">
+                        ${keuzes.map(k => `
+                            <button class="keuze-button" onclick="checkKeuzeAnswer(${k})">
+                                ${k}
+                            </button>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        }
+
+        function startTimer() {
+            clearInterval(appState.timerInterval);
+            
+            const timerDisplay = document.getElementById('gameTimer');
+            timerDisplay.textContent = appState.timeLeft;
+            timerDisplay.classList.remove('danger');
+
+            appState.timerInterval = setInterval(() => {
+                appState.timeLeft--;
+                timerDisplay.textContent = appState.timeLeft;
+
+                if (appState.timeLeft <= 10) {
+                    timerDisplay.classList.add('danger');
+                }
+
+                if (appState.timeLeft <= 0) {
+                    clearInterval(appState.timerInterval);
+                    if (appState.mode === 'individueel') {
+                        handleTimeout();
+                    } else {
+                        // Klassikaal: ga automatisch naar volgende som
+                        showLoading();
+                        setTimeout(() => {
+                            nextOpgave();
+                        }, 1500);
+                    }
+                }
+            }, 1000);
+        }
+
+        function handleTimeout() {
+            recordResult(null, false);
+            showFeedback(false);
+            setTimeout(() => {
+                showLoading();
+                setTimeout(() => {
+                    nextOpgave();
+                }, 1500);
+            }, 1500);
+        }
+
+        function checkInputAnswer() {
+            const input = document.getElementById('answerInput');
+            const userAnswer = parseInt(input.value);
+            const correct = userAnswer === appState.currentOpgave.antwoord;
+
+            recordResult(userAnswer, correct);
+            showFeedback(correct);
+
+            setTimeout(() => {
+                showLoading();
+                setTimeout(() => {
+                    nextOpgave();
+                }, 1500);
+            }, 1500);
+        }
+
+        function checkKeuzeAnswer(answer) {
+            const correct = answer === appState.currentOpgave.antwoord;
+            
+            // Visual feedback on buttons
+            const buttons = document.querySelectorAll('.keuze-button');
+            buttons.forEach(btn => {
+                const btnValue = parseInt(btn.textContent);
+                if (btnValue === appState.currentOpgave.antwoord) {
+                    btn.classList.add('correct');
+                } else if (btnValue === answer && !correct) {
+                    btn.classList.add('incorrect');
+                }
+                btn.disabled = true;
+            });
+
+            recordResult(answer, correct);
+            showFeedback(correct);
+
+            setTimeout(() => {
+                showLoading();
+                setTimeout(() => {
+                    nextOpgave();
+                }, 1500);
+            }, 1500);
+        }
+
+        function showAnswer() {
+            const opgave = appState.currentOpgave;
+            const content = document.getElementById('opgaveContent');
+            
+            content.innerHTML = `
+                <div class="opgave-text">${opgave.a} ${opgave.operator} ${opgave.b} = ${opgave.antwoord}</div>
+                <div class="klassikaal-controls">
+                    <button class="control-btn control-btn-primary" onclick="nextOpgave()">
+                        ➡️ Volgende som
+                    </button>
+                </div>
+            `;
+
+            // Auto-advance na antwoord tijd
+            setTimeout(() => {
+                nextOpgave();
+            }, appState.settings.antwoordTijd * 1000);
+        }
+
+        function nextOpgave() {
+            clearInterval(appState.timerInterval);
+            hideLoading();
+            hideFeedback();
+            
+            appState.session.currentIndex++;
+            startOpgave();
+        }
+
+        function showFeedback(correct) {
+            const overlay = document.getElementById('feedbackOverlay');
+            const message = document.getElementById('feedbackMessage');
+            
+            overlay.classList.remove('correct', 'incorrect');
+            overlay.classList.add(correct ? 'correct' : 'incorrect');
+            overlay.classList.add('active');
+            
+            message.textContent = correct ? '✅ Goed!' : '❌ Fout';
+        }
+
+        function hideFeedback() {
+            document.getElementById('feedbackOverlay').classList.remove('active');
+        }
+
+        function showLoading() {
+            document.getElementById('loadingScreen').classList.add('active');
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingScreen').classList.remove('active');
+        }
+
+        function recordResult(userAnswer, correct) {
+            const timeTaken = Math.round((Date.now() - appState.opgaveStartTime) / 1000);
+            
+            appState.session.results.push({
+                opgave: appState.currentOpgave,
+                userAnswer: userAnswer,
+                correct: correct,
+                timeTaken: timeTaken
+            });
+
+            updateStats();
+        }
+
+        function updateStats() {
+            const correctCount = appState.session.results.filter(r => r.correct).length;
+            const incorrectCount = appState.session.results.filter(r => !r.correct).length;
+            const percentage = appState.session.results.length > 0 
+                ? Math.round((correctCount / appState.session.results.length) * 100) 
+                : 0;
+
+            document.getElementById('gameCorrect').textContent = correctCount;
+            document.getElementById('gameIncorrect').textContent = incorrectCount;
+            document.getElementById('gameScore').textContent = percentage + '%';
+        }
+
+        function updateProgress() {
+            const current = appState.session.currentIndex + 1;
+            const total = appState.session.opgaven.length;
+            const percentage = Math.round((current / total) * 100);
+
+            document.getElementById('progressLabel').textContent = `Som ${current} van ${total}`;
+            document.getElementById('progressFill').style.width = percentage + '%';
+            document.getElementById('progressFill').textContent = percentage + '%';
+        }
+
+        function abortSession() {
+            showConfirm(
+                '❌',
+                'Sessie stoppen?',
+                'Weet je zeker dat je wilt stoppen? Je voortgang gaat verloren.',
+                () => {
+                    clearInterval(appState.timerInterval);
+                    endSession();
+                }
+            );
+        }
+
+        function endSession() {
+            clearInterval(appState.timerInterval);
+            
+            document.getElementById('gameScreen').classList.remove('active');
+            document.getElementById('resultsScreen').classList.add('active');
+
+            showResults();
+        }
+
+        function showResults() {
+            const correctCount = appState.session.results.filter(r => r.correct).length;
+            const total = appState.session.results.length;
+            const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+
+            // Different display for klassikaal vs individueel
+            if (appState.mode === 'klassikaal') {
+                document.getElementById('resultsTitle').textContent = '📋 Opgavenlijst';
+                document.getElementById('finalScore').textContent = '';
+                document.getElementById('finalPercentage').textContent = 'Leerlingen houden eigen score bij';
+                document.getElementById('retryBtn').style.display = 'none';
+
+                // Simple table for klassikaal - use opgaven directly
+                document.getElementById('resultsTableHead').innerHTML = `
+                    <tr>
+                        <th>#</th>
+                        <th>Opgave</th>
+                        <th>Antwoord</th>
+                    </tr>
+                `;
+
+                const tbody = document.getElementById('resultsTableBody');
+                tbody.innerHTML = appState.session.opgaven.map((opgave, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${opgave.a} ${opgave.operator} ${opgave.b}</td>
+                        <td><strong>${opgave.antwoord}</strong></td>
+                    </tr>
+                `).join('');
+            } else {
+                document.getElementById('resultsTitle').textContent = '🎉 Klaar!';
+                document.getElementById('finalScore').textContent = `${correctCount}/${total}`;
+                document.getElementById('finalPercentage').textContent = `${percentage}% correct`;
+                document.getElementById('retryBtn').style.display = 'block';
+
+                // Full table for individueel
+                document.getElementById('resultsTableHead').innerHTML = `
+                    <tr>
+                        <th>#</th>
+                        <th>Opgave</th>
+                        <th>Jouw antwoord</th>
+                        <th>Correct</th>
+                        <th>Tijd</th>
+                        <th>Status</th>
+                    </tr>
+                `;
+
+                const tbody = document.getElementById('resultsTableBody');
+                tbody.innerHTML = appState.session.results.map((r, i) => `
+                    <tr>
+                        <td>${i + 1}</td>
+                        <td>${r.opgave.a} ${r.opgave.operator} ${r.opgave.b}</td>
+                        <td>${r.userAnswer ?? '-'}</td>
+                        <td>${r.opgave.antwoord}</td>
+                        <td>${r.timeTaken}s</td>
+                        <td>
+                            <span class="status-badge ${r.correct ? 'correct' : 'incorrect'}">
+                                ${r.correct ? '✓ Goed' : '✗ Fout'}
+                            </span>
+                        </td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        function restartSession() {
+            document.getElementById('resultsScreen').classList.remove('active');
+            startSession();
+        }
+
+        function retryIncorrect() {
+            const incorrectOnes = appState.session.results
+                .filter(r => !r.correct)
+                .map(r => r.opgave);
+
+            if (incorrectOnes.length === 0) {
+                showAlert(
+                    '🎉',
+                    'Geweldig!',
+                    'Je had alles goed! Geen foute sommen om opnieuw te proberen.'
+                );
+                return;
+            }
+
+            appState.session.opgaven = incorrectOnes;
+            appState.session.currentIndex = 0;
+            appState.session.results = [];
+            appState.settings.aantal = incorrectOnes.length;
+
+            document.getElementById('resultsScreen').classList.remove('active');
+            document.getElementById('gameScreen').classList.add('active');
+            startOpgave();
+        }
+
+        function backToStartFull() {
+            location.reload();
+        }
+
+        // ===================================
+        // INITIALIZATION
+        // ===================================
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup simple settings click handlers
+            document.querySelectorAll('[data-bewerking], [data-niveau], [data-aantal], [data-weergave]').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const type = this.dataset.bewerking ? 'bewerking' : 
+                                this.dataset.niveau ? 'niveau' : 
+                                this.dataset.aantal ? 'aantal' : 'weergave';
+                    
+                    document.querySelectorAll(`[data-${type}]`).forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+
+            console.log('⚡ SommenFlitser geladen!');
+            console.log('📋 Twee modi: Klassikaal en Individueel');
+            
+            // Escape key om modal te sluiten
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape') {
+                    const modal = document.getElementById('customModal');
+                    if (modal.classList.contains('active')) {
+                        closeModal();
+                    }
+                }
+            });
+        });
+    </script>
+</body>
+</html>
